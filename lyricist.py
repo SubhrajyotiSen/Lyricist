@@ -1,10 +1,11 @@
 import urllib2
-import json
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
-
-API_KEY = 'your API key here'
-
+# the starting tag of the lyrics content
+TEXT = ("<div>\n <!-- Usage of azlyrics.com content by any third-party lyrics provide"
+        " is prohibited by our licensing agreement. Sorry about that. -->\n")
+# HTML tags to be replaces in the lyrics result
+replace_texts = ['\n <br>', '\n <br/>', '\n</div>', '\n <i>\n', '\n </i>', TEXT]
 
 def connected(host='http://google.com'):
     try:
@@ -14,19 +15,7 @@ def connected(host='http://google.com'):
     except:
         return False
 
-
-if connected():
-    # take input from user
-    text = raw_input(
-    	'Enter the artist name followed by the song or just the song name: \n')
-    # convert input to lowercase for easy comparison
-    textCopy = text.lower()
-    # strip extra spaces
-    text = text.strip()
-    # format the string to a query
-    text = text.replace(' ', '%20')
-    # generate the API request URL
-    url = 'http://api.lyricsnmusic.com/songs?api_key='+API_KEY+'&q='+text
+def getSoup(url):
     # required header
     hdr = {'User-Agent':
            ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 '
@@ -42,29 +31,44 @@ if connected():
     req = urllib2.Request(url, headers=hdr)
     # open the URL and get the response
     page = urllib2.urlopen(req)
-    # load the JSON from the response
-    data = json.load(page)
-    # initialize data2 as a placeholder string
-    data2 = 'null'
-    # loop to compare the search query with all results
-    for i in range(len(data)):
-        title = data[i]['title']
-        title = title.lower()
-        if title in textCopy:
-            data2 = data[i]['url']
-            print '\nTitle : '+data[i]['title']
-            print '\nArtist : '+data[i]['artist']['name']
-            break
-    if data2 == 'null':
-        print '\nUnable to find the song'
+    # use HTML parser in the page response
+    soup = BeautifulSoup(page, "html.parser")
+    # return the parse HTML
+    return soup
+
+if connected():
+    link = None
+    # take input from user
+    text = raw_input(
+    	'Enter the artist name followed by the song or just the song name: \n')
+    # convert input to lowercase for easy comparison
+    textCopy = text.lower()
+    # strip extra spaces
+    text = text.strip()
+    # format the string to a query
+    text = text.replace(' ', '%20')
+    # generate the API request URL
+    url = 'http://search.azlyrics.com/search.php?q='+text
+    soup = getSoup(url)
+    # find divs with class 'panel'
+    segments = soup.body.findAll("div", {"class": "panel"})
+    # find the div that contains the song results
+    for segment in segments:
+        if segment.find("div", "panel-heading").find("b").text == "Song results:":
+            link = segment.find("td", {"class": "text-left visitedlyr"}).find("a")['href']
+    # if a song result is found
+    if link is not None:
+        soup = getSoup(link)
+        # get the lyrics
+        lyrics = soup.body.find(
+            "div", {"class": "col-xs-12 col-lg-8 text-center"}).findAll("div")[6].prettify()
+        # remove html tags from lyrics
+        for text in replace_texts:
+            lyrics = lyrics.replace(text, '')
+        # print actual lyrics
+        print lyrics
     else:
-        req = urllib2.Request(data2, headers=hdr)
-        page = urllib2.urlopen(req)
-        # get HTML contents of the lyrics page
-        soup = BeautifulSoup(page)
-        # get required lyrics
-        data = soup.body.pre.string
-        print '\n\n'+data
+        print "Song not found"
 else:
     print ('No Internet connectivity. '
            'PLease check your network and try again\n')
