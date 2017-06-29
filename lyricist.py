@@ -1,11 +1,6 @@
 import urllib2
 from bs4 import BeautifulSoup
-
-# the starting tag of the lyrics content
-TEXT = ("<div>\n <!-- Usage of azlyrics.com content by any third-party lyrics provide"
-        " is prohibited by our licensing agreement. Sorry about that. -->\n")
-# HTML tags to be replaces in the lyrics result
-replace_texts = ['\n <br>', '\n <br/>', '\n</div>', '\n <i>\n', '\n </i>', TEXT]
+import html2text
 
 def connected(host='http://google.com'):
     try:
@@ -62,11 +57,8 @@ if connected():
         # get the lyrics
         lyrics = soup.body.find(
             "div", {"class": "col-xs-12 col-lg-8 text-center"}).findAll("div")[6].prettify()
-        # remove html tags from lyrics
-        for text in replace_texts:
-            lyrics = lyrics.replace(text, '')
-        # print actual lyrics
-        print lyrics
+        # print final lyrics
+        print html2text.html2text(lyrics)
     else:
         print "Song not found"
 else:
