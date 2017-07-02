@@ -37,10 +37,6 @@ if connected():
     # take input from user
     text = raw_input(
     	'Enter the artist name followed by the song or just the song name: \n')
-    # convert input to lowercase for easy comparison
-    textCopy = text.lower()
-    # strip extra spaces
-    text = text.strip()
     # generate the API request URL
     url = 'www.azlyrics.com ' + text
     for i in search(url):
