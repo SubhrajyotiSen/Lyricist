@@ -36,7 +36,7 @@ if connected():
     link = None
     # take input from user
     text = raw_input(
-    	'Enter the artist name followed by the song or just the song name: \n')
+    	'Enter the song name: \n')
     # generate the API request URL
     url = 'www.azlyrics.com ' + text
     for i in search(url):
