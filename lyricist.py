@@ -39,7 +39,7 @@ if connected():
     	'Enter the song name: \n')
     # generate the API request URL
     url = 'www.azlyrics.com ' + text
-    for i in search(url):
+    for i in search(url, lang='en', num=2):
     	link = i
     	break
     # if a song result is found
