@@ -1,5 +1,6 @@
 import urllib2
 from bs4 import BeautifulSoup
+from google import search
 import html2text
 
 def connected(host='http://google.com'):
@@ -40,19 +41,13 @@ if connected():
     textCopy = text.lower()
     # strip extra spaces
     text = text.strip()
-    # format the string to a query
-    text = text.replace(' ', '%20')
     # generate the API request URL
-    url = 'http://search.azlyrics.com/search.php?q='+text
-    soup = getSoup(url)
-    # find divs with class 'panel'
-    segments = soup.body.findAll("div", {"class": "panel"})
-    # find the div that contains the song results
-    for segment in segments:
-        if segment.find("div", "panel-heading").find("b").text == "Song results:":
-            link = segment.find("td", {"class": "text-left visitedlyr"}).find("a")['href']
+    url = 'www.azlyrics.com ' + text
+    for i in search(url):
+    	link = i
+    	break
     # if a song result is found
-    if link is not None:
+    if link != 'http://www.azlyrics.com/':
         soup = getSoup(link)
         # get the lyrics
         lyrics = soup.body.find(
